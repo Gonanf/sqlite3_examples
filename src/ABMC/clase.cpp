@@ -20,6 +20,8 @@ int obtenerBolitas(void* param, int argc /*Argument counter*/, char** argv /*Arg
 	return 0;
 }
 
+char campo[20];
+bool nuevo = false;
 
 int main(int argc, char** argv) {
 	sqlite3* messi;
@@ -40,7 +42,8 @@ int main(int argc, char** argv) {
 	cout << "\t\t\tMen" << char(163) << "\n\n";
 	cout << "\t\t1- Insertar bolitas\n";
 	cout << "\t\t2- Listado de bolitas\n";
-	cout << endl <<"\t\t3- Salir\n";
+	cout << "\t\t3- Añadir nuevo campo a la tabla\n";
+	cout << endl <<"\t\t4- Salir\n";
 	cout << "\t----------------------------------\n";
 	
 	cout << "\n\t\t\tElija la opcion:";
@@ -51,23 +54,37 @@ int main(int argc, char** argv) {
 	//Obtenemos los datos que necesitamos para ingresar un registro de bolita
 	int numero;
 	char color[25];
+	char extra[25];
 	cout << "Ingrese numero de bolita\n";
 	cin >> numero;
 	cout << "Ingrese color de bolita\n";
 	cin >> color;
+	//TODO:
+	if (nuevo){
+		cout << "Ingrese " << campo << " de bolita\n";
+		cin >> extra;
+	}
 	
 	//INSERT INTO bolitas VALUES (numero,color);
-	//Este puntero va a almacenar el query que vallamos creando
+		//Este puntero va a almacenar el query que vallamos creando
 	sqlite3_stmt* insertar;
 	//sqlite3_prepare_v2(db,sql,size,&sqlite3_stmt,sql_extra);
 	//el parametro "sql_extra" es opcional y solo en los casos en donde haya multiples queryes
 	//el parametro "sql" contiene comodines definidos con el caracter ?
 	//que especifica el lugar en donde luego se van a añadir los datos
-	sqlite3_prepare_v2(messi,"INSERT INTO bolitas(color, numero) VALUES(?,?);",-1,&insertar,NULL); 
+	
+	string sql =  "INSERT INTO bolitas(color, numero) VALUES(?,?);";
+	if (nuevo) {
+		sql = "INSERT INTO bolitas(color, numero, ";
+		sql += 	campo;
+		sql += ") VALUES(?,?,?);";
+	}
+	sqlite3_prepare_v2(messi,sql.c_str(),-1,&insertar,NULL); 
 	//! -1 es un parametro que define el tamaño del texto a insertar 
 	//Bind es para ingresar los valores al query SQL
 	sqlite3_bind_int(insertar,2,numero);
 	sqlite3_bind_text(insertar,1,color,-1,SQLITE_STATIC); //! -1 es un parametro que define el tamaño del texto a insertar
+	if (nuevo) sqlite3_bind_text(insertar,3,extra,-1,SQLITE_STATIC);
 	//El numero se refiere al orden de aparicion de signo de pregunta, el cual esta estructurado segun la tabla
 	//(Numero, Color)
 	
@@ -77,29 +94,50 @@ int main(int argc, char** argv) {
 			break;
 		}
 	case 2: {
-		//CONSULTA
-	// int sqlite3_exec(db, sql, callback, param, errmsg) {
-	// for (EJECUTAR(sql)){
-	// 	callback(result);
-	// 	}
-	// }
-	sqlite3_exec(messi,"SELECT * FROM bolitas;",obtenerBolitas,NULL,NULL);		
-		break;
-	}
+			//CONSULTA
+			// int sqlite3_exec(db, sql, callback, param, errmsg) {
+			// for (EJECUTAR(sql)){
+			// 	callback(result);
+			// 	}
+			// }
+			sqlite3_exec(messi,"SELECT * FROM bolitas;",obtenerBolitas,NULL,NULL);		
+			break;
+		}
 	case 3: {
-		return 0 ;
+		char tipo[20];
+		cout << "\nIngresar nombre de nuevo campo: ";
+		cin >> campo;
+		cout << "\nIngresar tipo de nuevo campo: ";
+		cin >> tipo;
+		
+		string query = "CREATE TABLE NBolitas (id INTEGER PRIMARY KEY,numero NUMBER, color TEXT,";
+		query += string(campo);
+		//query += " ";
+		//query += string(tipo);
+		query += " TEXT DEFAULT 'null');";
+		//cout << query;
+		sqlite3_exec(messi,query.c_str(),NULL,NULL,NULL);
+		
+		sqlite3_exec(messi,"INSERT INTO NBolitas(id,numero,color) SELECT * FROM bolitas;",NULL,NULL,NULL);
+		//sqlite3_exec(messi,"SELECT * FROM NBolitas;",obtenerBolitas,NULL,NULL);
+		//sqlite3_exec(messi,"DROP TABLE bolitas;",obtenerBolitas,NULL,NULL);	Para borrar tabla
+		sqlite3_exec(messi,"ALTER TABLE bolitas RENAME TO bolitas1;",NULL,NULL,NULL);	
+		sqlite3_exec(messi,"ALTER TABLE NBolitas RENAME TO bolitas;",NULL,NULL,NULL);
+		sqlite3_exec(messi,"SELECT (id,numero,color) FROM bolitas;",obtenerBolitas,NULL,NULL);
+		nuevo = true;
 		break;
 	}
+	case 4: {
+			return 0;
+			break;
+		}
 	default: {
-		cout << "Ingrese una opción correcta\n";
-		break;
-	}	
+			cout << "Ingrese una opción correcta\n";
+			break;
+		}	
 	}
-	system("cls");
+	
 	}while(true);
-	
-	
-	//MODIFICACION
 	
 	
 	//Cerramos la base de datos
