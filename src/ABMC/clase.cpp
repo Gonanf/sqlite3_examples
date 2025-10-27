@@ -14,13 +14,7 @@ using namespace std;
 
 //int (*callback)(void*,int,char**,char**)
 int obtenerBolitas(void* param, int argc /*Argument counter*/, char** argv /*Argument value*/, char** col /*Argument counter*/){
-	if (col[3][0] == 'V'){
-		return 0;
-	}
 	for (int i = 0; i < argc; i++){
-		if (i == 3){
-		continue;
-		}
 		cout << col[i]	<< ":" << argv[i] << "\t";	
 	}
 	cout << endl;
@@ -93,7 +87,7 @@ int main(int argc, char** argv) {
 	// 	callback(result);
 	// 	}
 	// }
-	sqlite3_exec(messi,"SELECT * FROM bolitas;",obtenerBolitas,NULL,NULL);		
+	sqlite3_exec(messi,"SELECT (id,numero,color) FROM bolitas WHERE NOT eliminado = 'V' ;",obtenerBolitas,NULL,NULL);		
 		break;
 	}
 	case 3: {
