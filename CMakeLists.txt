@@ -1,10 +1,21 @@
 cmake_minimum_required(VERSION 4.0)
 project(sqlite_ejemplo)
 
+
+
+include(FetchContent)
+
+message(STATUS "Downloading sqlite3...")
+FetchContent_Declare(
+  sqlite
+  URL      https://sqlite.org/2026/sqlite-amalgamation-3510200.zip
+  URL_HASH SHA3-256=9a9dd4eef7a97809bfacd84a7db5080a5c0eff7aaf1fc1aca20a6dc9a0c26f96
+)
+FetchContent_MakeAvailable(sqlite)
+message(STATUS "Done downloading")
+
 message(STATUS "Compiling sqlite3...")
-file( GLOB LIB_SOURCES lib/*.c )
-file( GLOB LIB_HEADERS lib/*.h )
-add_library( sqlite3 ${LIB_SOURCES} ${LIB_HEADERS} )
+add_library( sqlite3 "${sqlite_SOURCE_DIR}" )
 message(STATUS "Done compiling")
 
 
@@ -15,4 +26,5 @@ foreach(source ${APP_SOURCES})
     message(STATUS "Source: " ${source} " Name: " ${nombre})
     add_executable(${nombre} ${source})
     target_link_libraries(${nombre} sqlite3)
+    # target_include_directories(${nombre} PUBLIC "${sqlite_SOURCE_DIR}")
 endforeach(source ${APP_SOURCES})
