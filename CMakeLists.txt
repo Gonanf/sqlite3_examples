@@ -12,10 +12,10 @@ FetchContent_Declare(
   URL_HASH SHA3_256=9a9dd4eef7a97809bfacd84a7db5080a5c0eff7aaf1fc1aca20a6dc9a0c26f96
 )
 FetchContent_MakeAvailable(sqlite)
-message(STATUS "Done downloading")
+message(STATUS "Done downloading: " ${sqlite_SOURCE_DIR})
 
 message(STATUS "Compiling sqlite3...")
-add_library( sqlite "${sqlite_SOURCE_DIR}" )
+add_library( sqlite "${sqlite_SOURCE_DIR}/sqlite3.c" "${sqlite_SOURCE_DIR}/sqlite3.h" )
 set_target_properties(sqlite PROPERTIES LINKER_LANGUAGE C)
 message(STATUS "Done compiling")
 
