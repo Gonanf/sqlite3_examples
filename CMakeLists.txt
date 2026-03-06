@@ -16,6 +16,7 @@ message(STATUS "Done downloading")
 
 message(STATUS "Compiling sqlite3...")
 add_library( sqlite "${sqlite_SOURCE_DIR}" )
+set_target_properties(sqlite PROPERTIES LINKER_LANGUAGE C)
 message(STATUS "Done compiling")
 
 
@@ -25,6 +26,6 @@ foreach(source ${APP_SOURCES})
     get_filename_component(nombre ${source} NAME_WE)
     message(STATUS "Source: " ${source} " Name: " ${nombre})
     add_executable(${nombre} ${source})
-    # target_link_libraries(${nombre} sqlite)
+    target_link_libraries(${nombre} sqlite)
     target_include_directories(${nombre} PUBLIC "${sqlite_SOURCE_DIR}")
 endforeach(source ${APP_SOURCES})
